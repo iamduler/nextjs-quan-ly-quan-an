@@ -7,6 +7,7 @@ const configSchema = z.object({
 
 const config = configSchema.safeParse({
 	NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
+  NEXT_PUBLIC_CLIENT_URL: process.env.NEXT_PUBLIC_CLIENT_URL,
 })
 
 if (!config.success) {
