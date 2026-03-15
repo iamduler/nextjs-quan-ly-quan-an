@@ -7,12 +7,15 @@ import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useLoginMutation } from '@/queris/useAuth'
+import { useLoginMutation } from '@/queries/useAuth'
 import { toast } from 'sonner'
 import { handleErrorApi } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
   const loginMutation = useLoginMutation()
+  const router = useRouter()
+
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -27,6 +30,7 @@ export default function LoginForm() {
     try {
       const res = await loginMutation.mutateAsync(data)
       toast.success('Đăng nhập thành công')
+      router.push('/manage/dashboard')
     } catch (error: any) {
       handleErrorApi({ error, setError: form.setError })
     }
