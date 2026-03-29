@@ -82,7 +82,8 @@ export type UpdateEmployeeAccountBodyType = z.TypeOf<typeof UpdateEmployeeAccoun
 export const UpdateMeBody = z
   .object({
     name: z.string().trim().min(2).max(256),
-    avatar: z.string().url().optional()
+    // Empty string when user has no avatar URL yet; otherwise must be a valid URL
+    avatar: z.union([z.string().url(), z.literal('')]).optional()
   })
   .strict()
 
