@@ -6,21 +6,26 @@ const unAuthPaths = ['/login']
 // This function can be marked `async` if using `await` inside
 export function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl
-	const isAuthenticated = Boolean(request.cookies.get('accessToken')?.value)
+	const refreshToken = request.cookies.get('refreshToken')?.value
+	const accessToken = request.cookies.get('accessToken')?.value
 
-	console.log('pathname', pathname)
-	console.log('isAuthenticated', isAuthenticated)
-
-	// If not logged in and trying to access private paths, redirect to login
-	if (privatePaths.some(path => pathname.startsWith(path)) && !isAuthenticated) {
+	// Chưa đăng nhập thì không cho vào private paths
+	if (privatePaths.some(path => pathname.startsWith(path)) && !refreshToken) {
 		return NextResponse.redirect(new URL('/login', request.url))
 	}
 
-	// If logged in and trying to access unAuth paths, redirect to home
-	if (unAuthPaths.some(path => pathname.startsWith(path)) && isAuthenticated) {
+	// Đăng nhập rồi thì sẽ không cho vào login nữa
+	if (unAuthPaths.some(path => pathname.startsWith(path)) && refreshToken) {
 		return NextResponse.redirect(new URL('/', request.url))
 	}
 
+	// Đăng nhập rồi nhưng access token hết hạn
+	if (privatePaths.some(path => pathname.startsWith(path)) && refreshToken && !accessToken) {
+		const url = new URL('/logout', request.url);
+		url.searchParams.set('refreshToken', refreshToken ?? '')
+		return NextResponse.redirect(url)
+	}
+	
 	return NextResponse.next()
 }
  
