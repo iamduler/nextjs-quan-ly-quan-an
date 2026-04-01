@@ -1,6 +1,6 @@
 'use client'
 
-import { getRefreshTokenFromLocalStorage } from "@/lib/utils"
+import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from "@/lib/utils"
 import { useLogoutMutation } from "@/queries/useAuth"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef } from "react"
@@ -10,9 +10,13 @@ export default function LogoutPage() {
 	const router = useRouter()
 	const ref = useRef<any>(null)
 	const refreshToken = useSearchParams().get('refreshToken')
+	const accessToken = useSearchParams().get('accessToken')
 	
 	useEffect(() => {
-		if (ref.current || refreshToken != getRefreshTokenFromLocalStorage()) return
+		if (ref.current || 
+			(refreshToken && refreshToken != getRefreshTokenFromLocalStorage()) ||
+			(accessToken && accessToken != getAccessTokenFromLocalStorage())
+		) return
 		
 		ref.current = mutateAsync // Tạm thời lưu lại mutateAsync để tránh gọi lại API trong strict mode
 
@@ -23,7 +27,7 @@ export default function LogoutPage() {
 
 			router.push('/login')
 		})
-	}, [mutateAsync, router, refreshToken])
+	}, [mutateAsync, router, refreshToken, accessToken])
 
 	return (
 		<div>Logout Page</div>
