@@ -3,6 +3,8 @@ import { clsx, type ClassValue } from "clsx"
 import { UseFormSetError } from "react-hook-form"
 import { toast } from "sonner"
 import { twMerge } from "tailwind-merge"
+import jwt from "jsonwebtoken"
+import authApiRequest from "@/apiRequests/auth"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -51,4 +53,35 @@ export const setAccessTokenToLocalStorage = (accessToken: string) => {
 
 export const setRefreshTokenToLocalStorage = (refreshToken: string) => {
   return isBrowser && localStorage.setItem('refreshToken', refreshToken)
+}
+
+export const checkAndRefreshToken = async (params?: { 
+  onError?: () => void,
+  onSuccess?: () => void
+}) => {
+  const accessToken = getAccessTokenFromLocalStorage()
+  const refreshToken = getRefreshTokenFromLocalStorage()
+  
+  if (!accessToken || !refreshToken) return;
+
+  const decodedAccessToken = jwt.decode(accessToken) as { exp: number, iat: number }
+  const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number, iat: number }
+
+  const now = Date.now() / 1000 - 1
+
+  if (decodedRefreshToken.exp <= now) return;
+
+  // If the refresh token is about to expire, refresh it
+  if (decodedAccessToken.exp - now < (decodedAccessToken.exp - decodedAccessToken.iat) / 3) {
+    try {
+      const { payload } = await authApiRequest.refreshToken()
+      setAccessTokenToLocalStorage(payload.data.accessToken)
+      setRefreshTokenToLocalStorage(payload.data.refreshToken)
+
+      params?.onSuccess?.()
+    }
+    catch (error) {
+      params?.onError?.()
+    }
+  }
 }

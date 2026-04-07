@@ -21,8 +21,9 @@ export function proxy(request: NextRequest) {
 
 	// Đăng nhập rồi nhưng access token hết hạn
 	if (privatePaths.some(path => pathname.startsWith(path)) && refreshToken && !accessToken) {
-		const url = new URL('/logout', request.url);
+		const url = new URL('/refresh-token', request.url);
 		url.searchParams.set('refreshToken', refreshToken ?? '')
+		url.searchParams.set('redirect', pathname)
 		return NextResponse.redirect(url)
 	}
 	
