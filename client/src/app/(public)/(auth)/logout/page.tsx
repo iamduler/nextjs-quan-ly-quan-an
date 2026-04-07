@@ -4,6 +4,7 @@ import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from 
 import { useLogoutMutation } from "@/queries/useAuth"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef } from "react"
+import { useAppContext } from "@/components/app-provider"
 
 export default function LogoutPage() {
 	const { mutateAsync } = useLogoutMutation()
@@ -11,6 +12,7 @@ export default function LogoutPage() {
 	const ref = useRef<any>(null)
 	const refreshToken = useSearchParams().get('refreshToken')
 	const accessToken = useSearchParams().get('accessToken')
+	const { setIsAuth } = useAppContext()
 	
 	useEffect(() => {
 		if (ref.current || 
@@ -28,6 +30,7 @@ export default function LogoutPage() {
 				ref.current = null
 			}, 1000)
 
+			setIsAuth(false)
 			router.push('/login')
 		})
 	}, [mutateAsync, router, refreshToken, accessToken])

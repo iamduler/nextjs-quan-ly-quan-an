@@ -41,6 +41,7 @@ export default function LoginForm() {
     try {
       const res = await loginMutation.mutateAsync(data)
       toast.success('Đăng nhập thành công')
+      setIsAuth(true)
       router.push('/manage/dashboard')
     } catch (error: any) {
       handleErrorApi({ error, setError: form.setError })
