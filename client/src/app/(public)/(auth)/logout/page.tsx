@@ -16,7 +16,10 @@ export default function LogoutPage() {
 		if (ref.current || 
 			(refreshToken && refreshToken != getRefreshTokenFromLocalStorage()) ||
 			(accessToken && accessToken != getAccessTokenFromLocalStorage())
-		) return
+		) {
+			router.push('/')
+			return
+		}
 		
 		ref.current = mutateAsync // Tạm thời lưu lại mutateAsync để tránh gọi lại API trong strict mode
 

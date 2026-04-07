@@ -18,6 +18,9 @@ export default function RefreshTokenPage() {
 				}
 			})
 		}
+		else {
+			router.push('/')
+		}
 	}, [refreshToken, router, redirect])
 
 	return (
