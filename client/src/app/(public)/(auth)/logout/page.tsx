@@ -3,15 +3,16 @@
 import { getAccessTokenFromLocalStorage, getRefreshTokenFromLocalStorage } from "@/lib/utils"
 import { useLogoutMutation } from "@/queries/useAuth"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useRef } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { useAppContext } from "@/components/app-provider"
 
-export default function LogoutPage() {
+function Logout() {
 	const { mutateAsync } = useLogoutMutation()
 	const router = useRouter()
 	const ref = useRef<any>(null)
-	const refreshToken = useSearchParams().get('refreshToken')
-	const accessToken = useSearchParams().get('accessToken')
+	const searchParams = useSearchParams()
+	const refreshToken = searchParams.get('refreshToken')
+	const accessToken = searchParams.get('accessToken')
 	const { setIsAuth } = useAppContext()
 	
 	useEffect(() => {
@@ -33,9 +34,17 @@ export default function LogoutPage() {
 			setIsAuth(false)
 			router.push('/login')
 		})
-	}, [mutateAsync, router, refreshToken, accessToken])
+	}, [mutateAsync, router, refreshToken, accessToken, setIsAuth])
 
 	return (
 		<div>Logout Page</div>
+	)
+}
+
+export default function LogoutPage() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<Logout />
+		</Suspense>
 	)
 }

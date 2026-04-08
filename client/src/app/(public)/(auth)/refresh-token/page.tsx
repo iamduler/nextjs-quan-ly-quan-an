@@ -2,12 +2,13 @@
 
 import { checkAndRefreshToken, getRefreshTokenFromLocalStorage } from "@/lib/utils"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 
-export default function RefreshTokenPage() {
+function RefreshToken() {
 	const router = useRouter()
-	const refreshToken = useSearchParams().get('refreshToken')
-	const redirect = useSearchParams().get('redirect')
+	const searchParams = useSearchParams()
+	const refreshToken = searchParams.get('refreshToken')
+	const redirect = searchParams.get('redirect')
 	
 	useEffect(() => {
 		if (refreshToken && refreshToken == getRefreshTokenFromLocalStorage()) {
@@ -25,5 +26,13 @@ export default function RefreshTokenPage() {
 
 	return (
 		<div>Refresh Token...</div>
+	)
+}
+
+export default function RefreshTokenPage() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<RefreshToken />
+		</Suspense>
 	)
 }
