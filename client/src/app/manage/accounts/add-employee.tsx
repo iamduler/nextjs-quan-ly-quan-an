@@ -18,10 +18,17 @@ import { useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAddAccountMutation } from '@/queries/useAccount'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { toast } from 'sonner'
+import { handleErrorApi } from '@/lib/utils'
 
 export default function AddEmployee() {
   const [file, setFile] = useState<File | null>(null)
   const [open, setOpen] = useState(false)
+
+  const addAccountMutation = useAddAccountMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const form = useForm<CreateEmployeeAccountBodyType>({
     resolver: zodResolver(CreateEmployeeAccountBody),
@@ -42,6 +49,41 @@ export default function AddEmployee() {
     return avatar
   }, [file, avatar])
 
+  // Form reset
+  const reset = () => {
+    form.reset()
+    setFile(null)
+  }
+
+  // Form submit
+  const onSubmit = async (data: CreateEmployeeAccountBodyType) => {
+    if (addAccountMutation.isPending) return
+
+    try {
+      let body = data;
+
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const uploadImageResult = await uploadMediaMutation.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
+        body = {
+          ...data,
+          avatar: imageUrl
+        }
+      }
+
+      const result = await addAccountMutation.mutateAsync(body)
+      toast.success('Tạo tài khoản thành công')
+      reset()
+      setOpen(false)
+    }
+    catch (error: any) {
+      handleErrorApi({ error, setError: form.setError })
+    }
+  }
+  
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
@@ -56,7 +98,13 @@ export default function AddEmployee() {
           <DialogDescription>Các trường tên, email, mật khẩu là bắt buộc</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='add-employee-form'>
+          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='add-employee-form' 
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log(e)
+            })}
+
+            onReset={reset}
+          >
             <div className='grid gap-4 py-4'>
               <FormField
                 control={form.control}
